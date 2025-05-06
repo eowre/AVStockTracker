@@ -1,0 +1,11 @@
+# Redquired Packages
+# Python 3.8.10
+# Required Libraries
+# pip install pandas
+# pip install numpy
+# pip install matplotlib
+# pip install alpha_vantage
+pandas
+numpy
+matplotlib
+alpha_vantage
