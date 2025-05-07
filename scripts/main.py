@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 from stockFetcher import AVStockDataFetcher  # Import the required class
-from helpers.helperJsonCsv import helperJsonCsv  # Import the helper class
+from scripts.helpers.storageHandler import helperJsonCsv  # Import the helper class
 
 load_dotenv("config.env")
 

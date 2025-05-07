@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import json
 
-class helperJsonCsv:
+class storageHandler:
     """
     Helper class to save data frames in csv and json format.
     """
