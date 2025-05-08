@@ -125,7 +125,12 @@ class storageHandler:
             # Load the JSON file into a DataFrame
             with open(file_path, 'r') as json_file:
                 data = json.load(json_file)
+
+                if "data" not in data:
+                    raise ValueError("Invalid JSON structure. Expected a 'data' key.")
+                # Convert the JSON data to a DataFrame
                 df = pd.DataFrame(data['data'])  # Assuming the JSON structure has a "data" key
+                
         else:
             raise ValueError("Unsupported file format. Please provide a CSV or JSON file.")
 

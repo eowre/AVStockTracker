@@ -38,6 +38,14 @@ class AVStockDataHandler:
         # Filter the data based on the provided date range
         filtered_data = data.loc[start_date:end_date]
 
+        filter.rename(columns={
+                "1. open": "open",
+                "2. high": "high",
+                "3. low": "low",
+                "4. close": "close",
+                "5. volume": "volume"
+        }, inplace=True)
+
         return filtered_data, meta_data
 
     def fetch_multiple_tickers(self, tickers: list, start_date: str, end_date: str) -> dict:
