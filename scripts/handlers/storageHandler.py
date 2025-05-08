@@ -110,3 +110,29 @@ class storageHandler:
                 new_metadata_df.to_csv(metadata_csv_path, index=False)
         else:
             print("No new metadata to add.")
+
+    def df_builder(self, file_path):
+        """
+        Build a DataFrame from a CSV or json file
+
+        :param file_path: Path to the CSV/JSON file.
+        :return: DataFrame built from the CSV/JSON file.
+        """
+        if file_path.endswith('.csv'):
+            # Load the CSV file into a DataFrame
+            df = pd.read_csv(file_path)
+        elif file_path.endswith('.json'):
+            # Load the JSON file into a DataFrame
+            with open(file_path, 'r') as json_file:
+                data = json.load(json_file)
+                df = pd.DataFrame(data['data'])  # Assuming the JSON structure has a "data" key
+        else:
+            raise ValueError("Unsupported file format. Please provide a CSV or JSON file.")
+
+        # Convert the 'date' column to datetime and set it as the index
+        df['date'] = pd.to_datetime(df['date'])
+        df.set_index('date', inplace=True)
+
+        return df
+    
+    

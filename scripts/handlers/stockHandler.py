@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from alpha_vantage.timeseries import TimeSeries
 import pandas as pd
 
-class AVStockDataFetcher:
+class AVStockDataHandler:
     def __init__(self, api_key: str):
         """
         Initializes the AVStockDataFetcher with the provided API key.

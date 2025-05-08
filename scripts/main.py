@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
 import pandas as pd
-from stockFetcher import AVStockDataFetcher  # Import the required class
-from scripts.helpers.storageHandler import helperJsonCsv  # Import the helper class
+from handlers.stockHandler import AVStockDataHandler  # Import the required class
+from handlers.storageHandler import storageHandler  # Import the helper class
 
 load_dotenv("config.env")
 
@@ -17,9 +17,10 @@ def main():
     # Date range for the data
     start_date = '2020-01-01'
     end_date = '2025-01-01'
+    storageHandler = storageHandler()
 
     # Initialize the fetcher and fetch data
-    fetcher = AVStockDataFetcher(API_KEY)
+    fetcher = AVStockDataHandler(API_KEY)
     ticker_data = fetcher.fetch_multiple_tickers(tickers, start_date, end_date)
 
     # for ticker, data in ticker_data.items():
@@ -30,7 +31,6 @@ def main():
     #         print("No data available for this ticker.")
 
     # Save the data to CSV and JSON
-    storageHandler = helperJsonCsv()
 
     # Save each DataFrame to CSV and JSON
     storageHandler.multiple_dfs_to_csv_and_json(ticker_data)
