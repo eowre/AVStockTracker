@@ -4,6 +4,7 @@ import pandas as pd
 from handlers.stockHandler import AVStockDataHandler  # Import the stock data handler class
 from handlers.storageHandler import storageHandler  # Import the storage handler class
 from handlers.helperHandler import helperHandler  # Import the helper handler class
+from handlers.scrambleHandler import scrambleHandler  # Import the scramble handler class
 
 # Load environment variables from the config file
 load_dotenv("config.env")
@@ -24,37 +25,59 @@ def main():
 
     # Initialize the storage handler
     storage_handler = storageHandler()
+    # If statement to control whether to fetch new data
+    # This is a placeholder condition; replace with actual logic as needed
+    if True == False:
+        # Initialize the stock handler and fetch data
+        stock_handler = AVStockDataHandler(API_KEY)
+        ticker_data = stock_handler.fetch_multiple_tickers(tickers, start_date, end_date)
 
-    # Initialize the stock handler and fetch data
-    # stock_handler = AVStockDataHandler(API_KEY)
-    # ticker_data = stock_handler.fetch_multiple_tickers(tickers, start_date, end_date)
-
-    # # Save each DataFrame to CSV and JSON
-    # storageHandler.multiple_dfs_to_csv_and_json(ticker_data)
+        # # Save each DataFrame to CSV and JSON
+        storageHandler.multiple_dfs_to_csv_and_json(ticker_data)
 
     # Initialize the helper handler
     helper_handler = helperHandler()
 
     # Define regex patterns for locating AAPL and GOOGL files
-    AAPL_pattern = r"../raw_data/AAPL*\.csv$"  # Matches any CSV file starting with "AAPL" in the raw_data folder
-    GOOGL_pattern = r"../raw_data/GOOGL*\.json$"  # Matches any JSON file starting with "GOOGL" in the raw_data folder
+    AAPL_pattern = r"^AAPL.*\.csv$"  # Matches any CSV file starting with "AAPL"
+    GOOGL_pattern = r"^GOOGL.*\.json$"  # Matches any JSON file starting with "GOOGL"
 
     # Use the helper handler to locate files matching the patterns
-    aapl_file = helper_handler.find_files("../raw_data", AAPL_pattern)
-    googl_file = helper_handler.find_files("../raw_data", GOOGL_pattern)
+    aapl_file = helper_handler.find_files("raw_data", AAPL_pattern)
+    googl_file = helper_handler.find_files("raw_data", GOOGL_pattern)
+
+    # Debug: Print matching files
+    print("AAPL files found:", aapl_file)
+    print("GOOGL files found:", googl_file)
 
     # Check if the AAPL file was found and process it
     if aapl_file:
-        AAPL_data = storage_handler.df_builder(aapl_file)  # Build a DataFrame from the AAPL file
+        AAPL_data = storage_handler.df_builder(aapl_file[0])  # Use the first matching file
     else:
         print("AAPL file not found.")
-
     # Check if the GOOGL file was found and process it
     if googl_file:
-        GOOGL_data = storage_handler.df_builder(googl_file)  # Build a DataFrame from the GOOGL file
+        GOOGL_data = storage_handler.df_builder(googl_file[0])  # Use the first matching file
     else:
         print("GOOGL file not found.")
 
+    """
+        creating copy of 25 random days from AAPL data
+    """
+    AAPL_date_scramble = AAPL_data.sample(n=25, random_state=42)
+
+    print("Original AAPL data:")
+    print(AAPL_date_scramble)
+
+    if 'date' not in AAPL_date_scramble.columns:
+        AAPL_date_scramble = AAPL_date_scramble.reset_index()
+    
+    scramble_handler = scrambleHandler()
+
+    scramble_handler.scramble_df(AAPL_date_scramble)
+
+    print("Scrambled AAPL data:")
+    print(AAPL_date_scramble)
     # TODO: Implement the StockAnalyzer and StockVisualizer classes for further analysis and visualization
     # analyzer = StockAnalyzer()
     # visualizer = StockVisualizer()
