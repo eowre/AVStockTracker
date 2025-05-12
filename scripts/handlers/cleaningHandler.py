@@ -56,4 +56,3 @@ class cleaningHandler:
                 detected_formats.append(fmt)
 
         return detected_formats
-        """

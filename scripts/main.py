@@ -5,12 +5,14 @@ from handlers.stockHandler import AVStockDataHandler  # Import the stock data ha
 from handlers.storageHandler import storageHandler  # Import the storage handler class
 from handlers.helperHandler import helperHandler  # Import the helper handler class
 from handlers.scrambleHandler import scrambleHandler  # Import the scramble handler class
+from handlers.SQLHandler import SQLHandler  # Import the SQL handler class
 
 # Load environment variables from the config file
 load_dotenv("config.env")
 
 # Retrieve the API key from the environment variables
 API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
+db_path = os.getenv("DB_PATH")
 
 # Raise an error if the API key is not found
 if not API_KEY:
@@ -25,18 +27,20 @@ def main():
 
     # Initialize the storage handler
     storage_handler = storageHandler()
-    # If statement to control whether to fetch new data
-    # This is a placeholder condition; replace with actual logic as needed
-    if True == False:
-        # Initialize the stock handler and fetch data
-        stock_handler = AVStockDataHandler(API_KEY)
-        ticker_data = stock_handler.fetch_multiple_tickers(tickers, start_date, end_date)
 
-        # # Save each DataFrame to CSV and JSON
-        storageHandler.multiple_dfs_to_csv_and_json(ticker_data)
+    SQL_handler = SQLHandler(db_path)
+
+    # Initialize the stock handler and fetch data
+    stock_handler = AVStockDataHandler(API_KEY)
+    ticker_data = stock_handler.fetch_multiple_tickers(tickers, start_date, end_date)
+
+    # Save each DataFrame to CSV and JSON
+    storage_handler.multiple_dfs_to_csv_and_json(ticker_data)
 
     # Initialize the helper handler
     helper_handler = helperHandler()
+
+    SQL_handler.save_dfs_to_table(ticker_data)
 
     # Define regex patterns for locating AAPL and GOOGL files
     AAPL_pattern = r"^AAPL.*\.csv$"  # Matches any CSV file starting with "AAPL"
@@ -78,6 +82,7 @@ def main():
 
     print("Scrambled AAPL data:")
     print(AAPL_date_scramble)
+
     # TODO: Implement the StockAnalyzer and StockVisualizer classes for further analysis and visualization
     # analyzer = StockAnalyzer()
     # visualizer = StockVisualizer()
