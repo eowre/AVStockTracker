@@ -38,7 +38,7 @@ class AVStockDataHandler:
         # Filter the data based on the provided date range
         filtered_data = data.loc[start_date:end_date]
 
-        filter.rename(columns={
+        filtered_data.rename(columns={
                 "1. open": "open",
                 "2. high": "high",
                 "3. low": "low",

@@ -2,7 +2,7 @@
 import random
 from datetime import datetime
 
-class ScrambleHandler:
+class scrambleHandler:
     """
     A class to handle the scrambling of date formats.
     
@@ -19,7 +19,24 @@ class ScrambleHandler:
         """
         
 # Functions
-    def scramble_date_format(date_str):
+    def scramble_df(self, df):
+        """
+        Scrambles the date format of a DataFrame column.
+        
+        Args:
+            df (DataFrame): The input DataFrame containing a date column.
+        
+        Returns:
+            DataFrame: The DataFrame with the date column scrambled.
+        """
+        # Assuming the date column is named 'date'
+        df['date'] = df['date'].astype(str).apply(self.scramble_date_format)
+        df['open'] = df['open'].astype(str).apply(self.scramble_currency_format)
+        df['high'] = df['high'].astype(str).apply(self.scramble_currency_format)
+        df['low'] = df['low'].astype(str).apply(self.scramble_currency_format)
+        df['close'] = df['close'].astype(str).apply(self.scramble_currency_format)
+        return df
+    def scramble_date_format(self, date_str):
         """
         Scrambles the date format of the given date string into one of 5 common formats.
         
@@ -47,30 +64,47 @@ class ScrambleHandler:
         # Return the date in the selected format
         return date_obj.strftime(random_format)
     
-    def scramble_currency_format(currency_str):
+    def scramble_currency_format(self, currency_str):
         """
         Scrambles the currency format of the given currency string into one of 5 common formats.
         
         Args:
-            currency_str (str): The input currency string in the format 'USD 100.00'.
+            currency_str (str): The input currency string in the format 'USD 100.00' or '100.00'.
         
         Returns:
             str: The currency string in a randomly chosen format.
         """
+        import random
+
         # Define 5 common currency formats
         currency_formats = [
-            "${:,.2f}",  # Example: $100.00
-            "USD {:,.2f}",  # Example: USD 100.00
-            "{:,.2f} USD",  # Example: 100.00 USD
-            "${:,.0f}",  # Example: $100
-            "USD {:,.0f}"   # Example: USD 100
+            "${:,.2f}",          # Example: $100.00
+            "USD {:,.2f}",       # Example: USD 100.00
+            "{:,.2f} USD",       # Example: 100.00 USD
+            "{:,.2f}$",          # Example: 100.00$
+            "USD {:,.2f}".replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')  # Example: USD 1.234,56
         ]
         
-        # Parse the input currency string
-        amount = float(currency_str.split()[1])
-        
-        # Randomly select a format
-        random_format = random.choice(currency_formats)
-        
-        # Return the currency in the selected format
-        return random_format.format(amount)
+        try:
+            # Split the input string
+            parts = currency_str.split()
+            
+            # Check if the input contains a currency and amount
+            if len(parts) == 2 and parts[1].replace('.', '', 1).isdigit():
+                currency = parts[0]
+                amount = float(parts[1])
+            elif len(parts) == 1 and parts[0].replace('.', '', 1).isdigit():
+                # Assume USD if only the amount is provided
+                currency = "USD"
+                amount = float(parts[0])
+            else:
+                raise ValueError("Invalid currency format")
+            
+            # Randomly select a format
+            random_format = random.choice(currency_formats)
+            
+            # Return the currency in the selected format
+            return random_format.format(amount)
+        except (ValueError, IndexError):
+            # Return the original string if the input is invalid
+            return currency_str
