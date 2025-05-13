@@ -48,29 +48,38 @@ class storageHandler:
         with open(json_file_path, 'w') as json_file:
             json.dump(combined_data, json_file, indent=4)
 
-    def multiple_dfs_to_csv_and_json(self, dfs):
+    def multiple_dfs_to_csv_and_json(self, dfs, file_type="both"):
         """
-        Save multiple DataFrames to unique CSV and JSON files.
+        Save multiple DataFrames to unique CSV and/or JSON files.
 
         :param dfs: Dictionary where keys are tickers and values are tuples (DataFrame, metadata).
+        :param file_type: String indicating the file type to save ("csv", "json", or "both").
         """
         # Ensure the raw_data directory exists
         output_dir = os.path.join(os.path.dirname(__file__), "../../raw_data")
         os.makedirs(output_dir, exist_ok=True)
 
+        # Validate the file_type parameter
+        if file_type not in ["csv", "json", "both"]:
+            raise ValueError("Invalid file_type. Must be 'csv', 'json', or 'both'.")
+
         for ticker, (data, meta_data) in dfs.items():
             if data is not None and meta_data is not None:
-
                 latest_date = data.index[-1].strftime("%Y-%m-%d")
-                # Save stock data to CSV
-                csv_file_path = os.path.join(output_dir, f"{ticker}_data_{latest_date}.csv")
-                self.df_to_csv(data, csv_file_path)
 
-                # Save stock data and metadata to JSON
-                json_file_path = os.path.join(output_dir, f"{ticker}_data_{latest_date}.json")
-                self.df_to_json(data, meta_data, json_file_path)
+                # Save stock data to CSV if file_type is "csv" or "both"
+                if file_type in ["csv", "both"]:
+                    csv_file_path = os.path.join(output_dir, f"{ticker}_data_{latest_date}.csv")
+                    self.df_to_csv(data, csv_file_path)
+
+                # Save stock data and metadata to JSON if file_type is "json" or "both"
+                if file_type in ["json", "both"]:
+                    json_file_path = os.path.join(output_dir, f"{ticker}_data_{latest_date}.json")
+                    self.df_to_json(data, meta_data, json_file_path)
             else:
                 print(f"No data or metadata available for {ticker}. Skipping save.")
+
+        # Save metadata to a master CSV file
         self.save_metadata_to_master_csv(dfs, os.path.join(output_dir, "master_metadata.csv"))
 
     def save_metadata_to_master_csv(self, dfs, metadata_csv_path):
@@ -139,5 +148,5 @@ class storageHandler:
         df.set_index('date', inplace=True)
 
         return df
-    
-    
+
+

@@ -31,6 +31,10 @@ class scrambleHandler:
         """
         # Assuming the date column is named 'date'
         df['date'] = df['date'].astype(str).apply(self.scramble_date_format)
+        df['open'] = df['open'].astype(str).apply(self.scramble_currency_format)
+        df['high'] = df['high'].astype(str).apply(self.scramble_currency_format)
+        df['low'] = df['low'].astype(str).apply(self.scramble_currency_format)
+        df['close'] = df['close'].astype(str).apply(self.scramble_currency_format)
         return df
     def scramble_date_format(self, date_str):
         """
@@ -70,13 +74,15 @@ class scrambleHandler:
         Returns:
             str: The currency string in a randomly chosen format.
         """
+        import random
+
         # Define 5 common currency formats
         currency_formats = [
-            "${:,.2f}",  # Example: $100.00
-            "USD {:,.2f}",  # Example: USD 100.00
-            "{:,.2f} USD",  # Example: 100.00 USD
-            "${:,.0f}",  # Example: $100
-            "USD {:,.0f}"   # Example: USD 100
+            "${:,.2f}",          # Example: $100.00
+            "USD {:,.2f}",       # Example: USD 100.00
+            "{:,.2f} USD",       # Example: 100.00 USD
+            "{:,.2f}$",          # Example: 100.00$
+            "USD {:,.2f}".replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')  # Example: USD 1.234,56
         ]
         
         try:
