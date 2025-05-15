@@ -14,17 +14,16 @@ class AVStockDataHandler:
         self.api_key = api_key
         self.ts = TimeSeries(key=self.api_key, output_format='pandas')
 
-    def fetch_data(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+    def fetch_data(self, symbol: str) -> pd.DataFrame:
         """
-        Fetches stock data from Alpha Vantage API.
+        Fetches full stock data from Alpha Vantage API for a given symbol.
 
         Args:
             symbol (str): The stock ticker symbol.
-            start_date (str): The start date for the data in 'YYYY-MM-DD' format.
-            end_date (str): The end date for the data in 'YYYY-MM-DD' format.
 
         Returns:
-            pd.DataFrame: A DataFrame containing the stock data.
+            pd.DataFrame: A DataFrame containing the full stock data.
+            dict: Metadata associated with the stock data.
         """
         # Fetch daily stock data
         data, meta_data = self.ts.get_daily(symbol=symbol, outputsize='full')
@@ -35,39 +34,56 @@ class AVStockDataHandler:
         # Sort the data by index
         data = data.sort_index()
 
-        # Filter the data based on the provided date range
-        filtered_data = data.loc[start_date:end_date]
-
-        filtered_data.rename(columns={
-                "1. open": "open",
-                "2. high": "high",
-                "3. low": "low",
-                "4. close": "close",
-                "5. volume": "volume"
+        # Rename columns for consistency
+        data.rename(columns={
+            "1. open": "open",
+            "2. high": "high",
+            "3. low": "low",
+            "4. close": "close",
+            "5. volume": "volume"
         }, inplace=True)
 
-        return filtered_data, meta_data
+        return data, meta_data
 
-    def fetch_multiple_tickers(self, tickers: list, start_date: str, end_date: str) -> dict:
+    def fetch_multiple_tickers(self, tickers: list, date_ranges: list) -> dict:
         """
-        Fetches stock data for multiple tickers.
+        Fetches stock data for multiple tickers and slices it based on the provided date ranges.
 
         Args:
             tickers (list): List of stock ticker symbols.
-            start_date (str): The start date for the data in 'YYYY-MM-DD' format.
-            end_date (str): The end date for the data in 'YYYY-MM-DD' format.
+            date_ranges (list): List of tuples, where each tuple is a date range (start_date, end_date).
 
         Returns:
-            dict: A dictionary containing DataFrames for each ticker.
+            dict: A dictionary where keys are tickers and values are dictionaries of sliced DataFrames for each date range.
         """
-        data_dict = {}
+        result = {}
+
         for ticker in tickers:
             try:
-                print(f"Fetching data for {ticker}...")
-                data, meta_data  = self.fetch_data(ticker, start_date, end_date)
-                data_dict[ticker] = data, meta_data  
-                # Store both data and metadata
+                print(f"Fetching full data for {ticker}...")
+                # Fetch the full data for the ticker
+                full_data, meta_data = self.fetch_data(ticker)
+
+                # Slice the data for each date range
+                sliced_data = {}
+                for start_date, end_date in date_ranges:
+                    try:
+                        sliced_data[(start_date, end_date)] = full_data.loc[start_date:end_date]
+                    except Exception as e:
+                        print(f"Error slicing data for {ticker} in range {start_date} to {end_date}: {e}")
+                        sliced_data[(start_date, end_date)] = None
+
+                # Store the sliced data and metadata
+                result[ticker] = {
+                    "sliced_data": sliced_data,
+                    "meta_data": meta_data
+                }
+
             except Exception as e:
                 print(f"Error fetching data for {ticker}: {e}")
-                data_dict[ticker] = (None, None)  # Store None if fetching fails for a ticker
-        return data_dict
+                result[ticker] = {
+                    "sliced_data": None,
+                    "meta_data": None
+                }
+
+        return result
