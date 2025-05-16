@@ -31,6 +31,7 @@ class SQLHandler:
 
         :param dfs: Dictionary where keys are table names and values are tuples with data and metadata.
         """
+        # Metadata is not used in this method, but can be included if needed
         for table_name, (df, meta_data) in dfs.items():
             if df is not None:
                 # Save the DataFrame to the SQL table
@@ -50,6 +51,10 @@ class SQLHandler:
         with sqlite3.connect(self.db_path) as conn:
             # Add the index as a column
             df_with_index = df.reset_index()
+
+            if 'date' in df_with_index.columns:
+                # Ensure the date column only contains dates and not timestamps
+                df_with_index['date'] = pd.to_datetime(df_with_index['date']).dt.date
 
             # Create the table with the index column as the primary key
             cursor = conn.cursor()
